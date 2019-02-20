@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace WebAPI.data {
+namespace WebAPI.Models {
     public class DataSearch {
         private String titulo;
         private String url;

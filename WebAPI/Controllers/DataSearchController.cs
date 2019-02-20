@@ -3,20 +3,19 @@ using System.Collections.Generic;
 using System.Net;
 using System.Text.RegularExpressions;
 using System.Web.Http;
-using WebAPI.data;
+using WebAPI.Models;
 using WebAPI.lib;
 
 namespace WebAPI.Controllers {
     [RoutePrefix("api")]
     public class DataSearchController :ApiController {
-        private string consulta;
         private WebClient client;
         private List<DataSearch> lista;
 
         [AcceptVerbs("GET")]
         [Route("get-consulta/{consulta}")]
         public IEnumerable<DataSearch> ConsultarGoogle(String consulta) {
-            this.consulta = normalizaConsulta(consulta);
+            normalizarConsulta(ref consulta);
 
             client = new WebClient();
             lista = new List<DataSearch>();
@@ -41,7 +40,7 @@ namespace WebAPI.Controllers {
                     posMatchEnd = responseHTML.IndexOf(Constantes.patternEnd);
                     substringHTML = responseHTML.Substring(0, posMatchEnd + Constantes.lengthPatternEnd);
 
-                    setAtributos(ref titulo, ref url, substringHTML);
+                    SetAtributos(ref titulo, ref url, substringHTML);
 
                     if ((!String.IsNullOrEmpty(titulo)) && (!String.IsNullOrEmpty(url))) {
                         lista.Add(new DataSearch() { Titulo = titulo, URL = url });
@@ -51,18 +50,18 @@ namespace WebAPI.Controllers {
                 }
             }
 
-            return lista;
+            return lista.Count > 0 ? lista : null;
         }
 
-        private String normalizaConsulta(String pConsulta) {
+        private void normalizarConsulta(ref String pConsulta) {
             if (!String.IsNullOrEmpty(pConsulta)) {
-                return pConsulta.Replace(" ", "+");
+                pConsulta = pConsulta.Replace(" ", "+");
             } else {
                 throw new Exception("Texto de pesquisa não informado");
             }
         }
 
-        private void setAtributos(ref String pTitulo, ref String pURL, String pSubStringHTML) {
+        private void SetAtributos(ref String pTitulo, ref String pURL, String pSubStringHTML) {
             if (pSubStringHTML.Contains("http")) {
                 pSubStringHTML = WebUtility.HtmlDecode(pSubStringHTML);
 
